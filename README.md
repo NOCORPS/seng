@@ -13,15 +13,15 @@
 </p>
 
 <div align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/KANAGARAJ-M/SENG/build.yml?style=for-the-badge&logo=github-actions&logoColor=white" alt="Build Status" />
+  <img src="https://img.shields.io/github/actions/workflow/status/NOCORPS/seng/build.yml?style=for-the-badge&logo=github-actions&logoColor=white" alt="Build Status" />
   <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License" />
-  <img src="https://img.shields.io/github/sponsors/KANAGARAJ-M?color=ea4aaa&style=for-the-badge&logo=github-sponsors&logoColor=white" alt="Sponsors" />
+  <img src="https://img.shields.io/github/v/release/NOCORPS/seng?style=for-the-badge&color=orange" alt="Release" />
 </div>
 
 <div align="center">
   <br>
-  <img src="https://komarev.com/ghpvc/?username=KANAGARAJ-M&label=Repo%20Views&color=0e75b6&style=flat" alt="Views" />
-  <img src="https://img.shields.io/github/stars/KANAGARAJ-M/SENG?label=Stars&style=social" alt="Stars" />
+  <img src="https://komarev.com/ghpvc/?username=NOCORPS&label=Repo%20Views&color=0e75b6&style=flat" alt="Views" />
+  <img src="https://img.shields.io/github/stars/NOCORPS/seng?label=Stars&style=social" alt="Stars" />
 </div>
 
 ---
@@ -56,9 +56,6 @@ seng compile hello.se
 
 # Run compiled bytecode explicitly
 seng run examples/_secache/hello.sec
-
-# Disassemble bytecode
-seng disasm examples/_secache/hello.sec
 ```
 
 ---
@@ -128,19 +125,19 @@ end
 <summary><b>📦 Collections (Lists & Dictionaries)</b></summary>
 
 ```seng
-# Lists (v1.0.0+)
+# Lists
 make list fruits
 add "Apple" to fruits
 say item 1 of fruits
-# List literal (v1.1.0+)
+# List literal
 set myItems to ["A", "B", "C"]
 
-# Dictionaries (v1.1.0+)
+# Dictionaries
 make dictionary user
 set item "name" of user to "Bob"
 set item "age" of user to 40
 say item "name" of user
-# Dictionary literal (v1.1.0+)
+# Dictionary literal
 set config to {"theme": "dark", "version": 1.1}
 ```
 </details>
@@ -182,106 +179,77 @@ end
 ```
 </details>
 
-<details>
-<summary><b>📚 Standard Library</b></summary>
+---
 
-```seng
-import math
-import json
-import string
-import time
-import http
+<h2 align="center">📚 Standard Library</h2>
 
-say result of sqrt with 144
-set obj to result of json_parse with "{\"key\": \"val\"}"
-say result of format with "Hello {0}" and ["World"]
-say result of now
-set resp to result of http_get with "https://api.github.com/zen"
-```
-</details>
+SENG comes with a robust set of built-in packages:
+
+- **math** — `sqrt`, `sin`, `cos`, `random`, `pi`, `floor`, `ceil`, `abs`, `power`, `min`, `max`, `round`.
+- **sys** — `args()`, `exit()`, `sleep()`, `time_ms()`, `timestamp()`, `env_get()`, `run_cmd()`.
+- **json** — `json_parse()`, `json_stringify()`, `json_get()`, `json_has()`, `json_keys()`.
+- **string** — `upper()`, `lower()`, `trim()`, `contains()`, `starts_with()`, `ends_with()`, `replace()`, `split()`, `join()`, `format()`.
+- **type** — `type_of()`, `to_str()`, `to_num()`, `is_num()`, `is_str()`, `is_bool()`, `is_list_val()`, `is_nothing()`.
+- **io** — `read_file()`, `write_file()`, `append_file()`, `delete_file()`, `rename_file()`, `file_exists()`, `dir_exists()`, `make_dir()`, `list_dir()`.
+- **time** — `now()`, `format_time()`.
+- **http** — `http_get()`, `http_post()`, `http_post_json()`, `http_put()`, `http_delete()`.
 
 ---
 
-<h2 align="center">📦 Standard Library Packages</h2>
+<h2 align="center">🏗️ Architecture & Implementation</h2>
 
-SENG v1.1.0 expanded library:
-
-- **math** — `sqrt`, `sin`, `cos`, `random`, `pi`.
-- **sys** — `args()`, `exit()`, `sleep()`.
-- **json** — `json_parse()`, `json_stringify()`.
-- **string** — `upper()`, `lower()`, `replace()`, `split()`, `join()`, `format()`.
-- **type** — `type_of()`, `to_str()`, `to_num()`.
-- **io** — `read_file()`, `write_file()`, `file_exists()`.
-- **time** (v1.1.0) — `now()`, `format_time()`.
-- **http** (v1.1.0) — `http_get()`.
-
----
-
-<h2 align="center">👨‍💻 Meet the Developer</h2>
-
-<div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&text=Hi,%20I'm%20KANAGARAJ%20M&height=150&animation=fadeIn&section=header&fontSize=40&fontAlignY=35" width="100%"/>
-</div>
-
-```javascript
-const KANAGARAJ = {
-    location: "India 🇮🇳",
-    role: "Fullstack Developer",
-    currentFocus: "Building Web3 Future",
-    skills: {
-        languages: ["Dart", "JavaScript", "Java", "Kotlin", "C"],
-        frameworks: ["Flutter", "React", "Express"],
-        databases: ["MongoDB", "Firebase"],
-        tools: ["Git", "VS Code", "Figma"]
-    },
-    contact: "mkrcreations.dev@gmail.com"
-};
+```mermaid
+graph LR
+    A[.se Source] --> B[Lexer]
+    B --> C[Parser]
+    C --> D[AST]
+    D --> E[Interpreter]
+    D --> F[Compiler]
+    F --> G[.sec Bytecode]
+    G --> H[VM]
+    E --> I[Output]
+    H --> I
 ```
 
-<div align="center">
-  <h3>🛠️ Tech Stack</h3>
-  <img src="https://skillicons.dev/icons?i=flutter,dart,react,nodejs,express,firebase,mongodb,js,java,kotlin,git,figma,vscode,c&theme=dark" />
-</div>
-
-<h2 align="center">🏆 Achievements & Trophies</h2>
-
-<p align="center">
-  <img src="https://github-profile-trophy.vercel.app/?username=kanagaraj-m&theme=radical&no-frame=true&no-bg=true&row=1&column=7" width="100%" alt="Trophy" />
-</p>
+### Execution Models
+1. **Tree-walk Interpreter**: Directly executes the AST. Best for rapid development and debugging.
+2. **Bytecode VM**: Compiles source to a custom binary format (`.sec`) and executes it on a high-performance stack-based virtual machine.
 
 ---
 
-<h2 align="center">📊 Project & Profile Stats</h2>
+<h2 align="center">💖 Support & Sponsorship</h2>
+
+If you find **seng** useful and would like to support the maintainers, you can sponsor us via Patreon. Your support helps us keep the project alive and growing!
 
 <p align="center">
-  <img src="https://github-readme-activity-graph.vercel.app/graph?username=KANAGARAJ-M&theme=react-dark&hide_border=true&area=true" width="95%">
+  <a href="https://www.patreon.com/cw/NOCORPS?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink">
+    <img src="https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white" alt="Patreon" />
+  </a>
 </p>
 
-<p align="center">
-  <img src="https://github-stats-alpha.vercel.app/api?username=KANAGARAJ-M&cc=22272e&tc=37BCF6&ic=fff&bc=0000" width="49%" />
-  <img src="http://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=KANAGARAJ-M&theme=radical" width="49%" />
-</p>
+> [!IMPORTANT]
+> **Patreon Connected**: Sponsorships for **@NOCORPS** are managed via `kanagaraj.developer@gmail.com`. 
+> Please note that sponsorships made on Patreon will no longer receive recognition badges on GitHub, but they are deeply appreciated and directly fund the development of NoCorps projects.
 
 ---
 
-<h2 align="center">🤝 Connect With Me</h2>
+<h2 align="center">📊 Organization Stats</h2>
 
 <p align="center">
-  <a href="https://twitter.com/mr_kanagaraj_m">
-    <img src="https://img.shields.io/badge/Twitter-%231DA1F2.svg?style=for-the-badge&logo=Twitter&logoColor=white" alt="Twitter" />
-  </a>
-  <a href="https://www.linkedin.com/in/kanagaraj-m-b86439227/">
-    <img src="https://img.shields.io/badge/linkedin-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
-  </a>
-  <a href="https://www.instagram.com/kanagaraj.m_mkr/">
-    <img src="https://img.shields.io/badge/Instagram-%23E4405F.svg?style=for-the-badge&logo=Instagram&logoColor=white" alt="Instagram" />
-  </a>
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=NOCORPS&theme=react-dark&hide_border=true&area=true" width="95%">
 </p>
+
+<p align="center">
+  <img src="https://github-stats-alpha.vercel.app/api?username=NOCORPS&cc=22272e&tc=37BCF6&ic=fff&bc=0000" width="49%" />
+  <img src="http://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=NOCORPS&theme=radical" width="49%" />
+</p>
+
+---
 
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer" width="100%"/>
 </div>
 
 <p align="center">
-  <i>seng v1.1.0 — NoCorps.org built by KANAGARAJ-M</i>
+  <i>seng v1.1.0 — NoCorps.org</i>
 </p>
