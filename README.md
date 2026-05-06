@@ -13,15 +13,15 @@
 </p>
 
 <div align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/NOCORPS/seng/build.yml?style=for-the-badge&logo=github-actions&logoColor=white" alt="Build Status" />
+  <img src="https://img.shields.io/github/actions/workflow/status/nocorps/seng/build.yml?style=for-the-badge&logo=github-actions&logoColor=white" alt="Build Status" />
   <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License" />
-  <img src="https://img.shields.io/github/v/release/NOCORPS/seng?style=for-the-badge&color=orange" alt="Release" />
+  <img src="https://img.shields.io/github/v/release/nocorps/seng?style=for-the-badge&color=orange" alt="Release" />
 </div>
 
 <div align="center">
   <br>
-  <img src="https://komarev.com/ghpvc/?username=NOCORPS&label=Repo%20Views&color=0e75b6&style=flat" alt="Views" />
-  <img src="https://img.shields.io/github/stars/NOCORPS/seng?label=Stars&style=social" alt="Stars" />
+  <img src="https://komarev.com/ghpvc/?username=nocorps&label=Repo%20Views&color=0e75b6&style=flat" alt="Views" />
+  <img src="https://img.shields.io/github/stars/nocorps/seng?label=Stars&style=social" alt="Stars" />
 </div>
 
 ---
