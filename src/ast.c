@@ -109,3 +109,49 @@ static void node_list_free(NodeList *nl) {
     free(nl->items);
     nl->items = NULL; nl->count = 0; nl->cap = 0;
 }
+
+const char *node_kind_str(NodeKind k) {
+    switch (k) {
+        case ND_PROGRAM:   return "PROGRAM";
+        case ND_SET:       return "SET";
+        case ND_SAY:       return "SAY";
+        case ND_ASK:       return "ASK";
+        case ND_IF:        return "IF";
+        case ND_REPEAT:    return "REPEAT";
+        case ND_WHILE:     return "WHILE";
+        case ND_DEFINE:    return "DEFINE";
+        case ND_CALL_STMT: return "CALL_STMT";
+        case ND_RETURN:    return "RETURN";
+        case ND_MAKE_LIST: return "MAKE_LIST";
+        case ND_ADD_LIST:  return "ADD_LIST";
+        case ND_IMPORT:    return "IMPORT";
+        case ND_IMPORT_PKG:return "IMPORT_PKG";
+        case ND_STOP:      return "STOP";
+        case ND_SKIP:      return "SKIP";
+        case ND_TRY:       return "TRY";
+        case ND_THROW:     return "THROW";
+        case ND_MAKE_MAP:  return "MAKE_MAP";
+        case ND_FOR_EACH:  return "FOR_EACH";
+        case ND_SET_ITEM:  return "SET_ITEM";
+        case ND_NUMBER:    return "NUMBER";
+        case ND_STRING:    return "STRING";
+        case ND_BOOL:      return "BOOL";
+        case ND_NOTHING:   return "NOTHING";
+        case ND_IDENT:     return "IDENT";
+        case ND_BINOP:     return "BINOP";
+        case ND_NEGATE:    return "NEGATE";
+        case ND_NOT:       return "NOT";
+        case ND_CMP:       return "CMP";
+        case ND_AND:       return "AND";
+        case ND_OR:        return "OR";
+        case ND_CALL_EXPR: return "CALL_EXPR";
+        case ND_LIST_GET:  return "LIST_GET";
+        case ND_LIST_LEN:  return "LIST_LEN";
+        case ND_CLASS:     return "CLASS";
+        case ND_NEW:       return "NEW";
+        case ND_PROP_GET:  return "PROP_GET";
+        case ND_PROP_SET:  return "PROP_SET";
+        case ND_ME:        return "ME";
+        default:           return "UNKNOWN";
+    }
+}

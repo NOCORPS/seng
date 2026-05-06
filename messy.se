@@ -1,0 +1,7 @@
+if x is 5 then
+    say "messy"
+else
+    while y is 0
+        set y to y plus 1
+    end
+end

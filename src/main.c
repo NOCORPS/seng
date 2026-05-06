@@ -36,25 +36,55 @@ static void print_usage(void) {
     );
 }
 
+static int is_block_start(const char *line) {
+    const char *starts[] = {"if ", "while ", "repeat ", "for ", "try ", "define ", "blueprint ", "create blueprint "};
+    for (int i = 0; i < 8; i++) {
+        if (strstr(line, starts[i]) == line) return 1;
+    }
+    return 0;
+}
+
 static void run_repl(void) {
     printf("seng REPL v" SENG_VERSION "\nType 'stop' or Ctrl+D to exit.\n");
     Interp *in = interp_new();
-    char line[2048];
+    char line[4096];
+    char buffer[16384] = {0};
+    int block_level = 0;
+
     while (1) {
-        printf("> ");
+        if (block_level == 0) printf("> ");
+        else printf(".. ");
+        
         if (!fgets(line, sizeof(line), stdin)) break;
         if (strcmp(line, "stop\n") == 0) break;
-        if (line[0] == '\n') continue;
         
-        Lexer  *lex  = lexer_new(line);
-        Parser *par  = parser_new(lex);
-        Node   *prog = parse(par);
-        if (prog) {
-            interp_exec(in, prog);
-            node_free(prog);
+        strcat(buffer, line);
+
+        /* Simple block level tracking */
+        if (strstr(line, "if ") || strstr(line, "while ") || strstr(line, "repeat ") || 
+            strstr(line, "for ") || strstr(line, "try ") || strstr(line, "define ") || 
+            strstr(line, "blueprint ")) {
+            block_level++;
         }
-        parser_free(par);
-        lexer_free(lex);
+        if (strstr(line, "end\n") || strcmp(line, "end") == 0) {
+            block_level--;
+        }
+
+        if (block_level <= 0) {
+            block_level = 0;
+            if (buffer[0] != '\n') {
+                Lexer  *lex  = lexer_new(buffer);
+                Parser *par  = parser_new(lex);
+                Node   *prog = parse(par);
+                if (prog) {
+                    interp_exec(in, prog);
+                    node_free(prog);
+                }
+                parser_free(par);
+                lexer_free(lex);
+            }
+            buffer[0] = '\0';
+        }
     }
     printf("\n");
     interp_free(in);
@@ -161,7 +191,15 @@ int main(int argc, char *argv[]) {
     pkg_set_args(argc, argv);
     if (argc < 2) { print_usage(); return 0; }
 
-    const char *arg1 = argv[1];
+    int trace = 0;
+    int start_idx = 1;
+    if (strcmp(argv[1], "--trace") == 0) {
+        trace = 1;
+        start_idx = 2;
+    }
+
+    if (argc <= start_idx) { print_usage(); return 0; }
+    const char *arg1 = argv[start_idx];
 
     /* seng help */
     if (strcmp(arg1, "help") == 0 || strcmp(arg1, "--help") == 0
@@ -178,22 +216,22 @@ int main(int argc, char *argv[]) {
 
     /* seng compile <file.se> */
     if (strcmp(arg1, "compile") == 0) {
-        if (argc < 3) fatal("usage: seng compile <file.se>");
-        compile_source(argv[2]);
+        if (argc < start_idx + 2) fatal("usage: seng compile <file.se>");
+        compile_source(argv[start_idx + 1]);
         return 0;
     }
 
     /* seng run <file.sec> */
     if (strcmp(arg1, "run") == 0) {
-        if (argc < 3) fatal("usage: seng run <file.sec>");
-        vm_run_file(argv[2]);
+        if (argc < start_idx + 2) fatal("usage: seng run <file.sec>");
+        vm_run_file(argv[start_idx + 1]);
         return 0;
     }
 
     /* seng disasm <file.sec> */
     if (strcmp(arg1, "disasm") == 0) {
-        if (argc < 3) fatal("usage: seng disasm <file.sec>");
-        vm_disasm(argv[2]);
+        if (argc < start_idx + 2) fatal("usage: seng disasm <file.sec>");
+        vm_disasm(argv[start_idx + 1]);
         return 0;
     }
 
@@ -206,11 +244,38 @@ int main(int argc, char *argv[]) {
         if (is_cache_valid(cache, arg1)) {
             vm_run_file(cache);
         } else {
-            run_source(arg1);
+            char *src = read_file(arg1);
+            if (!src) fatal("cannot open file '%s'", arg1);
+            Lexer  *lex  = lexer_new(src);
+            Parser *par  = parser_new(lex);
+            Node   *prog = parse(par);
+            parser_free(par);
+            lexer_free(lex);
+            free(src);
+
+            Interp *interp = interp_new();
+            if (trace) interp_set_trace(interp, 1);
+            interp_exec(interp, prog);
+            interp_free(interp);
+            node_free(prog);
         }
         free(cache);
     } else {
-        run_source(arg1);
+        /* fallback to run_source with trace support */
+        char *src = read_file(arg1);
+        if (!src) fatal("cannot open file '%s'", arg1);
+        Lexer  *lex  = lexer_new(src);
+        Parser *par  = parser_new(lex);
+        Node   *prog = parse(par);
+        parser_free(par);
+        lexer_free(lex);
+        free(src);
+
+        Interp *interp = interp_new();
+        if (trace) interp_set_trace(interp, 1);
+        interp_exec(interp, prog);
+        interp_free(interp);
+        node_free(prog);
     }
 
     return 0;

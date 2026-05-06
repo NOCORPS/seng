@@ -1,0 +1,54 @@
+import string
+import io
+import sys
+
+# Get file path from arguments
+set argsList to result of args
+if length of argsList is less than 3 then
+    say "Usage: seng seng-fmt.se <file.se>"
+    call exit with 1
+end
+
+set path to item 3 of argsList
+set content to result of read_file with path
+set lines to result of split with content and "\n"
+
+make list formatted
+set indentLevel to 0
+set indentSize to 4
+
+for each line in lines then
+    set trimmed to result of trim with line
+
+    set l to result of str_len with trimmed
+    if l is equal to 0 then
+        add "" to formatted
+        skip
+    end
+
+    # Decrease indent for end/else/catch
+    if result of starts_with with trimmed and "end" or result of starts_with with trimmed and "else" or result of starts_with with trimmed and "catch" then
+        set indentLevel to indentLevel minus 1
+        if indentLevel is less than 0 then
+            set indentLevel to 0
+        end
+    end
+
+    # Apply indentation
+    set spaces to result of str_repeat with " " and (indentLevel times indentSize)
+    add (spaces + trimmed) to formatted
+
+    # Increase indent for blocks
+    if result of starts_with with trimmed and "if " or result of starts_with with trimmed and "while " or result of starts_with with trimmed and "repeat " or result of starts_with with trimmed and "for " or result of starts_with with trimmed and "try " or result of starts_with with trimmed and "define " or result of starts_with with trimmed and "blueprint " then
+        set indentLevel to indentLevel plus 1
+    end
+
+    # Special case for else/catch which are both 'end' and 'start'
+    if result of starts_with with trimmed and "else" or result of starts_with with trimmed and "catch" then
+        set indentLevel to indentLevel plus 1
+    end
+end
+
+set newContent to result of join with formatted and "\n"
+call write_file with path and newContent
+say "Formatted " + path

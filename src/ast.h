@@ -180,5 +180,6 @@ struct Node {
 
 Node *node_new (NodeKind kind, int line);
 void  node_free(Node *n);
+const char *node_kind_str(NodeKind k);
 
 #endif /* SENG_AST_H */

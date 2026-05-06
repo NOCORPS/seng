@@ -18,6 +18,7 @@ struct Interp {
     Node **imported;     /* imported ASTs kept alive so body_ref stays valid */
     int    import_count;
     int    import_cap;
+    int    trace;
 };
 
 /* forward decls */
@@ -345,6 +346,11 @@ static Signal exec_block(Interp *in, Env *e, NodeList *bl) {
 
 static Signal exec(Interp *in, Env *e, Node *n) {
     if (!n) return SIG_NONE;
+
+    if (in->trace && n->kind != ND_PROGRAM) {
+        printf("[trace] line %d: %s\n", n->line, node_kind_str(n->kind));
+    }
+
     switch (n->kind) {
         case ND_SET: {
             Value *v = eval(in, e, n->set.expr);
@@ -725,4 +731,8 @@ void interp_free(Interp *in) {
 
 void interp_exec(Interp *in, Node *program) {
     exec_block(in, in->globals, &program->program);
+}
+
+void interp_set_trace(Interp *in, int trace) {
+    in->trace = trace;
 }

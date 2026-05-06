@@ -1,0 +1,35 @@
+{
+  "name": "seng-vscode",
+  "displayName": "Seng Language Support",
+  "description": "Syntax highlighting for the Seng (Simple English) programming language.",
+  "version": "0.1.0",
+  "publisher": "nocorps",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "seng",
+        "aliases": [
+          "Seng",
+          "seng"
+        ],
+        "extensions": [
+          ".se"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "seng",
+        "scopeName": "source.se",
+        "path": "./syntaxes/seng.tmLanguage.json"
+      }
+    ]
+  }
+}

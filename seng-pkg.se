@@ -1,0 +1,54 @@
+import http
+import io
+import string
+import sys
+
+# Get arguments
+set argsList to result of args
+if length of argsList is less than 4 then
+    say "Seng Package Manager"
+    say "Usage: seng seng-pkg.se install <name> [url]"
+    call exit with 1
+end
+
+set cmd to item 3 of argsList
+if cmd is not equal to "install" then
+    say "Unknown command: " + cmd
+    call exit with 1
+end
+
+set pkgName to item 4 of argsList
+set url to ""
+
+# Predefined registry
+if length of argsList is equal to 4 then
+    if pkgName is equal to "json-utils" then
+        set url to "https://raw.githubusercontent.com/nocorps/seng-libs/main/json-utils.se"
+    else if pkgName is equal to "date-helper" then
+        set url to "https://raw.githubusercontent.com/nocorps/seng-libs/main/date-helper.se"
+    else
+        say "Error: Package '" + pkgName + "' not found in registry and no URL provided."
+        call exit with 1
+    end
+else
+    set url to item 5 of argsList
+end
+
+say "Installing " + pkgName + " from " + url + "..."
+
+# Check for libs directory
+if not (result of dir_exists with "libs") then
+    call make_dir with "libs"
+end
+
+set targetPath to "libs/" + pkgName + ".se"
+set content to result of http_get with url
+
+set l to result of str_len with content
+if l is greater than 0 then
+    call write_file with targetPath and content
+    say "Successfully installed " + pkgName + " to " + targetPath
+else
+    say "Error: Could not download package. Content is empty."
+    call exit with 1
+end
