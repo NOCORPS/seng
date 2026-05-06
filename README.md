@@ -233,6 +233,18 @@ If you find **seng** useful and would like to support the maintainers, you can s
 
 ---
 
+<h2 align="center">🤝 Contributors</h2>
+
+<p align="center">
+  <a href="https://github.com/KANAGARAJ-M">
+    <img src="https://github.com/KANAGARAJ-M.png?size=100" width="100" style="border-radius: 50%;" alt="KANAGARAJ-M" />
+    <br />
+    <sub><b>KANAGARAJ M</b></sub>
+  </a>
+</p>
+
+---
+
 <h2 align="center">📊 Organization Stats</h2>
 
 <p align="center">
