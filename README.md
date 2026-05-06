@@ -243,18 +243,6 @@ If you find **seng** useful and would like to support the maintainers, you can s
   </a>
 </p>
 
----
-
-<h2 align="center">📊 Project & Developer Stats</h2>
-
-<p align="center">
-  <img src="https://github-readme-activity-graph.vercel.app/graph?username=KANAGARAJ-M&theme=react-dark&hide_border=true&area=true" width="95%">
-</p>
-
-<p align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=NOCORPS&show_icons=true&theme=radical&count_private=true" width="48%" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=NOCORPS&layout=compact&theme=radical" width="48%" />
-</p>
 
 ---
 
