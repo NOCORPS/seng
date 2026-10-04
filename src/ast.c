@@ -98,6 +98,26 @@ void node_free(Node *n) {
             node_free(n->set_item.index);
             node_free(n->set_item.val);
             break;
+        case ND_LIST_LIT:
+            node_list_free(&n->list_lit);
+            break;
+        case ND_MAP_LIT:
+            node_list_free(&n->map_lit);
+            break;
+        case ND_MATCH:
+            node_free(n->match_stmt.expr);
+            node_list_free(&n->match_stmt.cases);
+            node_list_free(&n->match_stmt.default_body);
+            break;
+        case ND_CASE:
+            node_free(n->case_stmt.pattern);
+            node_list_free(&n->case_stmt.body);
+            break;
+        case ND_LAMBDA:
+            for (int i = 0; i < n->lambda.param_count; i++) free(n->lambda.params[i]);
+            free(n->lambda.params);
+            node_list_free(&n->lambda.body);
+            break;
         case ND_ME: break;
         default: break;
     }
@@ -152,6 +172,9 @@ const char *node_kind_str(NodeKind k) {
         case ND_PROP_GET:  return "PROP_GET";
         case ND_PROP_SET:  return "PROP_SET";
         case ND_ME:        return "ME";
+        case ND_MATCH:     return "MATCH";
+        case ND_CASE:      return "CASE";
+        case ND_LAMBDA:    return "LAMBDA";
         default:           return "UNKNOWN";
     }
 }

@@ -10,12 +10,12 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #ifdef _WIN32
 #  include <windows.h>
 #  include <wininet.h>
 #  include <direct.h>
 #else
+#  include <dirent.h>
 #  include <unistd.h>
 #endif
 
@@ -435,9 +435,15 @@ static Value *nat_file_size(Value **a, int n) {
 }
 static Value *nat_dir_exists(Value **a, int n) {
     (void)n; require_str(a[0],1,"dir_exists");
+#ifdef _WIN32
+    DWORD attr = GetFileAttributesA(a[0]->str);
+    if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY)) return val_bool(1);
+    return val_bool(0);
+#else
     struct stat st;
     if (stat(a[0]->str, &st) == 0 && S_ISDIR(st.st_mode)) return val_bool(1);
     return val_bool(0);
+#endif
 }
 static Value *nat_make_dir(Value **a, int n) {
     (void)n; require_str(a[0],1,"make_dir");
@@ -449,9 +455,22 @@ static Value *nat_make_dir(Value **a, int n) {
 }
 static Value *nat_list_dir(Value **a, int n) {
     (void)n; require_str(a[0],1,"list_dir");
+    Value *lst = val_list();
+#ifdef _WIN32
+    char search_path[MAX_PATH];
+    snprintf(search_path, sizeof(search_path), "%s\\*", a[0]->str);
+    WIN32_FIND_DATAA fd;
+    HANDLE hFind = FindFirstFileA(search_path, &fd);
+    if (hFind == INVALID_HANDLE_VALUE) fatal("'list_dir': cannot open directory '%s'", a[0]->str);
+    do {
+        if (strcmp(fd.cFileName, ".") == 0 || strcmp(fd.cFileName, "..") == 0)
+            continue;
+        list_push(lst, val_str(fd.cFileName));
+    } while (FindNextFileA(hFind, &fd));
+    FindClose(hFind);
+#else
     DIR *dir = opendir(a[0]->str);
     if (!dir) fatal("'list_dir': cannot open directory '%s'", a[0]->str);
-    Value *lst = val_list();
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
@@ -459,6 +478,7 @@ static Value *nat_list_dir(Value **a, int n) {
         list_push(lst, val_str(entry->d_name));
     }
     closedir(dir);
+#endif
     return lst;
 }
 static Value *nat_get_cwd(Value **a, int n) {

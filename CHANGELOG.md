@@ -4,6 +4,22 @@ All notable changes to the **seng** programming language are documented here.
 
 Format: `[Version] — YYYY-MM-DD`
 
+## [1.2.0] — 2026-10-04
+
+### ✨ Major Features & Functional Primitives
+
+#### 🔀 Pattern Matching (`match ... with`)
+- **Natural Logic Branching** — Added structured `match <expr> with` statements with `case <pattern> then` branches and optional `else` fallbacks.
+
+#### ⚡ Lambdas & Closures (`action`)
+- **Anonymous Actions** — Create first-class anonymous functions using the `action [with params] then ... end` keyword syntax.
+- **First-Class Functions** — Pass actions directly into variables or higher-order functions.
+
+#### 🔄 Higher-Order Collection Routines
+- **`map`** — Transform list items with `map(list, action)`.
+- **`filter`** — Filter lists based on boolean predicate actions with `filter(list, action)`.
+- **`reduce`** — Accumulate list elements into a single aggregate with `reduce(list, action, initial)`.
+
 ---
 
 ## [1.0.2] — 2026-05-03

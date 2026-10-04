@@ -26,6 +26,7 @@ typedef enum {
     TK_THAN,    TK_THEN,   TK_TIMES,  TK_TO,
     TK_WHILE,   TK_WITH,
     TK_TRY,     TK_CATCH,  TK_THROW,
+    TK_MATCH,   TK_CASE,   TK_ACTION,
 
     /* ── operators ── */
     TK_PLUS_OP,   /* +  */

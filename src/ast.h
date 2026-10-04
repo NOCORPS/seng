@@ -30,6 +30,9 @@ typedef enum {
     ND_SET_ITEM,  /* set item i of x to v       */
     ND_LIST_LIT,  /* [v1, v2, ...]              */
     ND_MAP_LIT,   /* {k1:v1, k2:v2, ...}        */
+    ND_MATCH,     /* match <expr> with ...      */
+    ND_CASE,      /* case <pattern> then ...    */
+    ND_LAMBDA,    /* action with ...            */
     /* expressions */
     ND_NUMBER,    /* 3.14                       */
     ND_STRING,    /* "hello"                    */
@@ -175,6 +178,23 @@ struct Node {
         NodeList list_lit;
         /* ND_MAP_LIT (interleaved keys and values) */
         NodeList map_lit;
+        /* ND_MATCH */
+        struct {
+            Node     *expr;
+            NodeList  cases;
+            NodeList  default_body;
+        } match_stmt;
+        /* ND_CASE */
+        struct {
+            Node     *pattern;
+            NodeList  body;
+        } case_stmt;
+        /* ND_LAMBDA */
+        struct {
+            char    **params;
+            int       param_count;
+            NodeList  body;
+        } lambda;
     };
 };
 

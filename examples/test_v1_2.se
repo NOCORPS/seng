@@ -1,0 +1,58 @@
+say "--- Testing seng v1.2.0 Features ---"
+
+say "1. Testing Pattern Matching (match...with)..."
+set statusCode to 404
+
+match statusCode with
+    case 200 then
+        say "Status: OK (200)"
+    case 404 then
+        say "Status: Page Not Found (404)"
+    case 500 then
+        say "Status: Internal Error (500)"
+    else
+        say "Status: Unknown"
+end
+
+set fruit to "Apple"
+match fruit with
+    case "Banana" then
+        say "Yellow fruit"
+    case "Apple" then
+        say "Red fruit"
+    else
+        say "Other fruit"
+end
+
+say "2. Testing Lambdas (action keyword)..."
+set addTen to action with x then
+    give back x plus 10
+end
+
+set r1 to result of addTen with 15
+say "15 + 10 = " + r1
+
+say "3. Testing map, filter, reduce..."
+make list nums
+add 1 to nums
+add 2 to nums
+add 3 to nums
+add 4 to nums
+add 5 to nums
+
+set doubled to result of map with nums and action with n then
+    give back n * 2
+end
+say "Doubled list: " + doubled
+
+set evens to result of filter with nums and action with n then
+    give back (n mod 2) is equal to 0
+end
+say "Evens list: " + evens
+
+set sum to result of reduce with nums and action with acc and n then
+    give back acc plus n
+end and 0
+say "Sum of list (1..5): " + sum
+
+say "--- All v1.2.0 Features Passed Successfully! ---"

@@ -73,3 +73,10 @@ System and process utilities.
 - `sleep(ms)`: Pauses execution for `ms` milliseconds.
 - `env_get(name)`: Returns value of environment variable.
 - `run_cmd(cmd)`: Executes a system command and returns the output.
+
+## 🔄 Higher-Order Collection Functions (v1.2.0+)
+Built-in higher-order list functions accepting actions or functions.
+- `map(list, fn)`: Transforms each item using `fn` and returns a new list.
+- `filter(list, fn)`: Returns a new list containing items for which `fn` returns true.
+- `reduce(list, fn, initial)`: Accumulates list items into a single value using `fn(acc, item)`.
+

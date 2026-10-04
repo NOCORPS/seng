@@ -19,7 +19,8 @@ static const struct { const char *word; TkType type; } kw_table[] = {
     {"times",   TK_TIMES},   {"to",      TK_TO},     {"true",    TK_TRUE},
     {"while",   TK_WHILE},   {"with",    TK_WITH},   {"try",     TK_TRY},
     {"catch",   TK_CATCH},   {"throw",   TK_THROW},  {"dictionary", TK_DICTIONARY},
-    {"each",    TK_EACH},
+    {"each",    TK_EACH},    {"match",   TK_MATCH},  {"case",    TK_CASE},
+    {"action",  TK_ACTION},
     {NULL,      TK_EOF}
 };
 
@@ -186,6 +187,7 @@ const char *tk_name(TkType t) {
         "instance","is","item","hidden","length","less","list","make","me","minus","mod",
         "not","note","dictionary", "of","or","plus","repeat","result","say","set",
         "skip","stop","than","then","times","to","while","with","try","catch","throw",
+        "match","case","action",
         "+","-","*","/","%","(",")","[","]","{","}",":",",",
         "NEWLINE","EOF","ERROR"
     };

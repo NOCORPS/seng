@@ -1,0 +1,6 @@
+# Build & Compiler Artifacts
+*.o
+*.obj
+_secache/
+installer/
+*.log

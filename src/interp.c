@@ -44,6 +44,19 @@ static char *concat_vals(Value *a, Value *b, int line) {
     return r;
 }
 
+static int val_equal(Value *a, Value *b) {
+    if (!a && !b) return 1;
+    if (!a || !b) return 0;
+    if (a->type != b->type) return 0;
+    switch (a->type) {
+        case VAL_NUM:    return a->num == b->num;
+        case VAL_STR:    return strcmp(a->str, b->str) == 0;
+        case VAL_BOOL:   return a->bool_val == b->bool_val;
+        case VAL_NULL:   return 1;
+        default:         return a == b;
+    }
+}
+
 static SengFunc *make_func(Node *n) {
     SengFunc *fn = (SengFunc *)xcalloc(1, sizeof(SengFunc));
     fn->name        = xstrdup(n->define.name);
@@ -56,26 +69,17 @@ static SengFunc *make_func(Node *n) {
     return fn;
 }
 
-static Value *call_func(Interp *in, Env *e, Value *fv, NodeList *arg_nodes, Value *me_val, int line) {
+static Value *call_func_vals(Interp *in, Value *fv, Value **args, int argc, Value *me_val, int line) {
     if (!fv || (fv->type != VAL_FUNC && fv->type != VAL_NATIVE))
         fatal("line %d: value is not a function", line);
 
-    int argc = arg_nodes->count;
-
-    /* native */
     if (fv->type == VAL_NATIVE) {
         SengNative *nat = fv->native;
         if (nat->arity >= 0 && argc != nat->arity)
             fatal("line %d: '%s' expects %d argument(s), got %d", line, nat->name, nat->arity, argc);
-        Value **args = (Value **)xmalloc(sizeof(Value *) * (size_t)(argc > 0 ? argc : 1));
-        for (int i = 0; i < argc; i++) args[i] = eval(in, e, arg_nodes->items[i]);
-        Value *rv = nat->fn(args, argc);
-        for (int i = 0; i < argc; i++) val_deref(args[i]);
-        free(args);
-        return rv;
+        return nat->fn(args, argc);
     }
 
-    /* user-defined */
     SengFunc *fn = fv->func;
     if (argc != fn->param_count)
         fatal("line %d: '%s' expects %d argument(s), got %d", line, fn->name, fn->param_count, argc);
@@ -83,9 +87,7 @@ static Value *call_func(Interp *in, Env *e, Value *fv, NodeList *arg_nodes, Valu
     Env *fenv = env_new(in->globals);
     if (me_val) env_set(fenv, "me", me_val);
     for (int i = 0; i < fn->param_count; i++) {
-        Value *av = eval(in, e, arg_nodes->items[i]);
-        env_set(fenv, fn->params[i], av);
-        val_deref(av);
+        env_set(fenv, fn->params[i], args[i]);
     }
 
     NodeList *body = (NodeList *)fn->body_ref;
@@ -97,6 +99,16 @@ static Value *call_func(Interp *in, Env *e, Value *fv, NodeList *arg_nodes, Valu
     Value *rv = in->ret_val ? in->ret_val : val_null();
     in->ret_val = NULL;
     in->signal  = SIG_NONE;
+    return rv;
+}
+
+static Value *call_func(Interp *in, Env *e, Value *fv, NodeList *arg_nodes, Value *me_val, int line) {
+    int argc = arg_nodes->count;
+    Value **args = (Value **)xmalloc(sizeof(Value *) * (size_t)(argc > 0 ? argc : 1));
+    for (int i = 0; i < argc; i++) args[i] = eval(in, e, arg_nodes->items[i]);
+    Value *rv = call_func_vals(in, fv, args, argc, me_val, line);
+    for (int i = 0; i < argc; i++) val_deref(args[i]);
+    free(args);
     return rv;
 }
 
@@ -301,7 +313,61 @@ static Value *eval(Interp *in, Env *e, Node *n) {
             return m;
         }
 
+        case ND_LAMBDA: {
+            SengFunc *fn = (SengFunc *)xcalloc(1, sizeof(SengFunc));
+            fn->name        = xstrdup("<action>");
+            fn->param_count = n->lambda.param_count;
+            fn->params      = (char **)xmalloc(sizeof(char *) *
+                              (size_t)(fn->param_count ? fn->param_count : 1));
+            for (int i = 0; i < fn->param_count; i++)
+                fn->params[i] = xstrdup(n->lambda.params[i]);
+            fn->body_ref = &n->lambda.body;
+            return val_func(fn);
+        }
+
         case ND_CALL_EXPR: {
+            if (!n->call.obj && strcmp(n->call.name, "map") == 0 && n->call.args.count == 2) {
+                Value *lst = eval(in, e, n->call.args.items[0]);
+                Value *fn  = eval(in, e, n->call.args.items[1]);
+                if (!lst || lst->type != VAL_LIST) fatal("line %d: 'map' first argument must be a list", n->line);
+                Value *res = val_list();
+                for (int i = 0; i < lst->list->count; i++) {
+                    Value *arg = lst->list->items[i];
+                    Value *out = call_func_vals(in, fn, &arg, 1, NULL, n->line);
+                    list_push(res, out);
+                }
+                val_deref(lst); val_deref(fn);
+                return res;
+            }
+            if (!n->call.obj && strcmp(n->call.name, "filter") == 0 && n->call.args.count == 2) {
+                Value *lst = eval(in, e, n->call.args.items[0]);
+                Value *fn  = eval(in, e, n->call.args.items[1]);
+                if (!lst || lst->type != VAL_LIST) fatal("line %d: 'filter' first argument must be a list", n->line);
+                Value *res = val_list();
+                for (int i = 0; i < lst->list->count; i++) {
+                    Value *arg = lst->list->items[i];
+                    Value *out = call_func_vals(in, fn, &arg, 1, NULL, n->line);
+                    if (val_truthy(out)) list_push(res, val_copy(arg));
+                    val_deref(out);
+                }
+                val_deref(lst); val_deref(fn);
+                return res;
+            }
+            if (!n->call.obj && strcmp(n->call.name, "reduce") == 0 && n->call.args.count == 3) {
+                Value *lst = eval(in, e, n->call.args.items[0]);
+                Value *fn  = eval(in, e, n->call.args.items[1]);
+                Value *acc = eval(in, e, n->call.args.items[2]);
+                if (!lst || lst->type != VAL_LIST) fatal("line %d: 'reduce' first argument must be a list", n->line);
+                for (int i = 0; i < lst->list->count; i++) {
+                    Value *rargs[2] = { acc, lst->list->items[i] };
+                    Value *next_acc = call_func_vals(in, fn, rargs, 2, NULL, n->line);
+                    val_deref(acc);
+                    acc = next_acc;
+                }
+                val_deref(lst); val_deref(fn);
+                return acc;
+            }
+
             Value *me_val = NULL;
             Value *fv = NULL;
             if (n->call.obj) {
@@ -419,6 +485,27 @@ static Signal exec(Interp *in, Env *e, Node *n) {
                     Signal s = exec_block(in, e, &n->if_stmt.blocks[i]);
                     return s;
                 }
+            }
+            return SIG_NONE;
+        }
+
+        case ND_MATCH: {
+            Value *target = eval(in, e, n->match_stmt.expr);
+            int matched = 0;
+            for (int i = 0; i < n->match_stmt.cases.count; i++) {
+                Node *cnode = n->match_stmt.cases.items[i];
+                Value *pat = eval(in, e, cnode->case_stmt.pattern);
+                if (val_equal(target, pat)) {
+                    val_deref(pat);
+                    matched = 1;
+                    val_deref(target);
+                    return exec_block(in, e, &cnode->case_stmt.body);
+                }
+                val_deref(pat);
+            }
+            val_deref(target);
+            if (!matched && n->match_stmt.default_body.count > 0) {
+                return exec_block(in, e, &n->match_stmt.default_body);
             }
             return SIG_NONE;
         }

@@ -141,6 +141,29 @@ static Node *parse_primary(Parser *p) {
         return n;
     }
 
+    /* action [with p1 [and p2]*] [then] ... end */
+    if (tk.type == TK_ACTION) {
+        p_advance(p);
+        Node *n = node_new(ND_LAMBDA, ln);
+        if (p_match(p, TK_WITH)) {
+            Token p1 = p_expect(p, TK_IDENT);
+            n->lambda.params = (char **)xmalloc(sizeof(char *));
+            n->lambda.params[0] = p1.value;
+            n->lambda.param_count = 1;
+            while (p_match(p, TK_AND)) {
+                Token px = p_expect(p, TK_IDENT);
+                n->lambda.params = (char **)xrealloc(n->lambda.params,
+                    sizeof(char *) * (size_t)(n->lambda.param_count + 1));
+                n->lambda.params[n->lambda.param_count++] = px.value;
+            }
+        }
+        p_match(p, TK_THEN);
+        eat_newline(p);
+        n->lambda.body = parse_block(p);
+        p_expect(p, TK_END);
+        return n;
+    }
+
     /* length of <list> */
     if (tk.type == TK_LENGTH) {
         p_advance(p);
@@ -357,7 +380,7 @@ static NodeList parse_block(Parser *p) {
     skip_newlines(p);
     while (1) {
         TkType t = p_peek(p).type;
-        if (t == TK_END || t == TK_ELSE || t == TK_EOF) break;
+        if (t == TK_END || t == TK_ELSE || t == TK_CASE || t == TK_EOF) break;
         Node *s = parse_stmt(p);
         if (s) node_list_push(&bl, s);
         skip_newlines(p);
@@ -477,6 +500,42 @@ static Node *parse_stmt(Parser *p) {
                                     sizeof(NodeList) * (size_t)n->if_stmt.count);
                 n->if_stmt.blocks[n->if_stmt.count - 1] = eb;
             }
+        }
+        p_expect(p, TK_END);
+        eat_newline(p);
+        return n;
+    }
+
+    /* ── match ── */
+    if (tk.type == TK_MATCH) {
+        p_advance(p);
+        Node *target = parse_expr(p);
+        if (p_check(p, TK_WITH)) p_advance(p);
+        else if (p_check(p, TK_THEN)) p_advance(p);
+        eat_newline(p);
+        skip_newlines(p);
+
+        Node *n = node_new(ND_MATCH, ln);
+        n->match_stmt.expr = target;
+
+        while (p_check(p, TK_CASE)) {
+            p_advance(p);
+            int cln = p->cur.line;
+            Node *pat = parse_expr(p);
+            if (p_check(p, TK_THEN)) p_advance(p);
+            eat_newline(p);
+            NodeList cbody = parse_block(p);
+            Node *cnode = node_new(ND_CASE, cln);
+            cnode->case_stmt.pattern = pat;
+            cnode->case_stmt.body = cbody;
+            node_list_push(&n->match_stmt.cases, cnode);
+            skip_newlines(p);
+        }
+        if (p_check(p, TK_ELSE)) {
+            p_advance(p);
+            eat_newline(p);
+            n->match_stmt.default_body = parse_block(p);
+            skip_newlines(p);
         }
         p_expect(p, TK_END);
         eat_newline(p);
