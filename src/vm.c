@@ -64,6 +64,9 @@ typedef struct {
 
 void vm_run_file(const char *path) {
     FILE *f = fopen(path, "rb");
+    if (!f && (path[0] == '/' || path[0] == '\\')) {
+        f = fopen(path + 1, "rb");
+    }
     if (!f) fatal("cannot open '%s'", path);
 
     /* ── read header ── */

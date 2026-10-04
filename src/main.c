@@ -56,7 +56,7 @@ static void run_repl(void) {
         else printf(".. ");
         
         if (!fgets(line, sizeof(line), stdin)) break;
-        if (strcmp(line, "stop\n") == 0) break;
+        if (strchr(line, '\x04') || strcmp(line, "stop\n") == 0 || strcmp(line, "stop\r\n") == 0) break;
         
         strcat(buffer, line);
 
@@ -91,7 +91,13 @@ static void run_repl(void) {
 }
 
 /* build output path: store in _secache folder, like python's __pycache__ */
-static char *make_sec_path(const char *src_path) {
+static char *make_sec_path(const char *raw_src_path) {
+    const char *src_path = raw_src_path;
+    if (src_path[0] == '/' || src_path[0] == '\\') {
+        FILE *chk = fopen(raw_src_path, "rb");
+        if (chk) fclose(chk);
+        else src_path = raw_src_path + 1;
+    }
     const char *slash = strrchr(src_path, '/');
     const char *backslash = strrchr(src_path, '\\');
     if (backslash > slash) slash = backslash;
@@ -136,7 +142,13 @@ static char *make_sec_path(const char *src_path) {
 static int is_cache_valid(const char *cache_path, const char *src_path) {
     struct stat s_cache, s_src;
     if (stat(cache_path, &s_cache) != 0) return 0;
-    if (stat(src_path, &s_src) != 0) return 0;
+    if (stat(src_path, &s_src) != 0) {
+        if ((src_path[0] == '/' || src_path[0] == '\\') && stat(src_path + 1, &s_src) == 0) {
+            /* valid relative path */
+        } else {
+            return 0;
+        }
+    }
     if (s_cache.st_mtime < s_src.st_mtime) return 0;
 
     FILE *f = fopen(cache_path, "rb");

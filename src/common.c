@@ -3,6 +3,9 @@
 
 char *read_file(const char *path) {
     FILE *f = fopen(path, "rb");
+    if (!f && (path[0] == '/' || path[0] == '\\')) {
+        f = fopen(path + 1, "rb");
+    }
     if (!f) return NULL;
     fseek(f, 0, SEEK_END);
     long sz = ftell(f);
